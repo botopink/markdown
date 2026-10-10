@@ -1,0 +1,16 @@
+//// The `markdown` package — module-tree root (decision 396; front 142 step 3).
+////
+//// `markdown`: CommonMark 0.31.2 and the GitHub-flavoured extensions (tables,
+//// strikethrough, task lists, extended autolinks, footnotes, the tag filter)
+//// parsed to an `MdNode` tree and written as HTML (`toHtml`), with GitHub's
+//// heading ids and smart punctuation. `md_text` (code points, character
+//// classes, escaping, URL normalisation, entity decoding) and `md_entities`
+//// (the HTML5 named references) are the reader's own and private. The tree
+//// names no framework (decision 113). See `../AGENTS.md`.
+////
+//// The `files` ORDER in `botopink.json` is a dependency order: a module is
+//// listed before the siblings that import it.
+
+pub mod markdown;
+mod md_text;
+mod md_entities;

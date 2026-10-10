@@ -1,0 +1,166 @@
+// `markdown` beyond the spec fixtures (front 121, step 2; moved by front 142,
+// step 3): the default options (extensions, smart punctuation, heading ids),
+// the HTML they write, `headings`, the node tree itself.
+
+import {markdown, markdown.MdNode, markdown.MarkdownOptions};
+
+fn post() -> string {
+    return """
+## Introduction
+
+Here is my _great_ post, with a [link](https://botopink.dev) and `code`.
+
+- [x] written
+- [ ] published
+
+| Name | Stars |
+|------|------:|
+| Zod  |    40 |
+
+## Conclusion
+
+~~Wrong~~ Right. See the [introduction](#introduction).
+
+## Conclusion
+""";
+}
+
+fn html(source: string) -> string {
+    return markdown.toHtml(markdown.parse(source));
+}
+
+fn contains(html: string, part: string) -> @Result<void, string> {
+    if (!html.contains(part)) throw "expected " + part + " in " + html;
+    return;
+}
+
+test "markdown: inline Markdown renders to HTML" {
+    val out = html(post());
+    try contains(out, "<em>great</em>");
+    try contains(out, "<a href=\"https://botopink.dev\">link</a>");
+    try contains(out, "<code>code</code>");
+}
+
+test "markdown: GitHub-flavoured extensions as HTML" {
+    val out = html(post());
+    try contains(
+        out,
+        "<input checked=\"\" disabled=\"\" type=\"checkbox\"> written",
+    );
+    try contains(out, "<th>Name</th>");
+    try contains(out, "<td align=\"right\">40</td>");
+    try contains(out, "<del>Wrong</del>");
+}
+
+test "markdown: headings get ids, and a repeated heading gets a suffix" {
+    val doc = markdown.parse(post());
+    val slugs = markdown
+        .headings(doc)
+        .map({ h -> h.depth.toString() + ":" + h.slug })
+        .join(" ");
+    assert slugs == "2:introduction 2:conclusion 2:conclusion-1", slugs;
+    try contains(
+        markdown.toHtml(doc),
+        "<h2 id=\"introduction\">Introduction</h2>",
+    );
+    try contains(
+        markdown.toHtml(doc),
+        "<h2 id=\"conclusion-1\">Conclusion</h2>",
+    );
+}
+
+test "markdown: a slug drops punctuation and keeps letters of any script" {
+    val doc = markdown.parse(
+        "# Hello, *World*!\n\n## Ação & reação: 2nd_take\n",
+    );
+    val slugs = markdown.headings(doc).map({ h -> h.slug }).join(" ");
+    assert slugs == "hello-world ação--reação-2nd_take", slugs;
+}
+
+test "markdown: smart punctuation is on, and a field turns it off" {
+    val smart = html("\"quoted\" -- and... 'single'");
+    try contains(smart, "“quoted” – and… ‘single’");
+    val plainDoc = markdown.parseWith(
+        "\"quoted\"",
+        MarkdownOptions(smartPunctuation: false),
+    );
+    assert markdown.toHtml(plainDoc)
+        == "<p>&quot;quoted&quot;</p>\n", markdown.toHtml(plainDoc);
+}
+
+test "markdown: the extensions and the ids are options" {
+    val plain = markdown.parseWith(
+        "# Title\n\n~~x~~ www.botopink.dev\n",
+        markdown.commonmarkOptions(),
+    );
+    assert markdown.toHtml(plain)
+        == "<h1>Title</h1>\n<p>~~x~~ www.botopink.dev</p>\n", markdown.toHtml(
+        plain,
+    );
+    val gfm = markdown.parse("~~x~~ www.botopink.dev\n");
+    assert markdown.toHtml(gfm)
+        == "<p><del>x</del> <a href=\"http://www.botopink.dev\">www.botopink.dev</a></p>\n", markdown.toHtml(
+        gfm,
+    );
+}
+
+test "markdown: the tree is the document's structure" {
+    val doc = markdown.parse("# A\n\n- one\n- two\n\n```bp\nval x = 1;\n```\n");
+    assert doc.nodes.length == 3;
+    val kinds = doc.nodes
+        .map({ n ->
+            case n {
+                Heading(depth, id, _) -> "h" + depth.toString() + "#" + id;
+                List(ordered, _, tight: t, items) -> "list:"
+                    + items.length.toString()
+                    + ":"
+                    + t.toString()
+                    + ":"
+                    + ordered.toString();
+                CodeBlock(lang, body) -> "code:" + lang + ":" + body;
+                _ -> "?";
+            }
+        })
+        .join(" ");
+    assert kinds == "h1#a list:2:true:false code:bp:val x = 1;\n", kinds;
+}
+
+test "markdown: the inline nodes are Emphasis, Strong, Code, Link and Image" {
+    val doc = markdown.parse("*a* **b** `c` [d](/x \"T\") ![e](/y.png)\n");
+    val kids = case doc.nodes.at(0) ?? MdNode.Rule {
+        Paragraph(ks) -> ks;
+        _ -> [];
+    };
+    val names = kids
+        .map({ n ->
+            case n {
+                Emphasis(_) -> "emphasis";
+                Strong(_) -> "strong";
+                Code(body) -> "code:" + body;
+                Link(href, title, _) -> "link:" + href + ":" + title;
+                Image(src, alt, _) -> "image:" + src + ":" + alt;
+                Text(_) -> "";
+                _ -> "?";
+            }
+        })
+        .filter({ s -> s != "" })
+        .join(" ");
+    assert names == "emphasis strong code:c link:/x:T image:/y.png:e", names;
+}
+
+test "markdown: a code block keeps its text and names its language" {
+    val out = html("```bp\nval a = \"<b>\";\n```\n");
+    assert out
+        == "<pre><code class=\"language-bp\">val a = &quot;&lt;b&gt;&quot;;\n</code></pre>\n", out;
+}
+
+test "markdown: footnotes are numbered by first reference" {
+    val doc = markdown.parse(
+        "A[^b] and B[^a].\n\n[^a]: First.\n[^b]: Second.\n",
+    );
+    assert doc.footnotes
+        .map({ f -> f.label + ":" + f.index.toString() })
+        .join(" ")
+        == "b:1 a:2";
+    assert markdown.footnoteId("n") == "n";
+}

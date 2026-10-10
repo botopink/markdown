@@ -1,0 +1,16 @@
+{
+  "name": "markdown",
+  "version": "0.0.1",
+  "otp": "28",
+  "description": "Markdown (CommonMark 0.31.2 + GFM) read into a tree of its own — Heading, Paragraph, Emphasis, Strong, Code, CodeBlock, Link, Image, List, Quote, … — and written as HTML; names no framework — commonJS and erlang",
+  "src": "src/",
+  "entry": "root.bp",
+  "target": "erlang",
+  "targets": ["erlang", "commonJS"],
+  "files": [
+    "root.bp",
+    "md_entities.bp",
+    "md_text.bp",
+    "markdown.bp"
+  ]
+}
