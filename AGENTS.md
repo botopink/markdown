@@ -1,5 +1,7 @@
 # markdown
 
+`decisions-taken.md` is generated — from the meta repository's `specs/<milestone>/decisions-taken.md` by `scripts/decisions-split.py`; edit it there, never here.
+
 > Repository: `botopink/markdown` (`git@github.com:botopink/markdown.git`) · in the meta checkout: `repository/markdown/`
 
 Markdown read into a tree of its own (decision 396): `Heading`, `Paragraph`, `Emphasis`, `Strong`, `Code`,
