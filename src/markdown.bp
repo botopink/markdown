@@ -2993,7 +2993,7 @@ fn footnoteHtml(f: Footnote) -> string {
     val last = f.kids.at(n - 1);
     val endsInParagraph = case last {
         null {
-            false;
+            false
         }
         node {
             case node {
@@ -3011,7 +3011,7 @@ fn footnoteHtml(f: Footnote) -> string {
             .join("");
         val lastKids = case last {
             null {
-                [];
+                []
             }
             node {
                 case node {
