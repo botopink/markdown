@@ -1,0 +1,11 @@
+// The module `toc` of this package: a document's table of contents.
+import {markdown, markdown.MdDoc} from "markdown";
+
+pub val bullet: string = "*";
+
+pub fn outline(doc: MdDoc) -> string {
+    return markdown
+        .headings(doc)
+        .map({ h -> h.depth.toString() + " " + bullet + " " + h.text + " #" + h.slug })
+        .join("\n");
+}

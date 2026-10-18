@@ -1,3 +1,67 @@
 //// Decision 330 — `?T` is read with TypeScript's operators and has no methods; `result` goes; a type declared in a type is its associated type.
 
-pub fn main() -> void {}
+import {io.terminal} from "std";
+import {markdown, markdown.Footnote, markdown.MdDoc} from "markdown";
+
+// A post of a blog: its Markdown source, when it has one, and a hook that
+// rewrites a heading's anchor, when the post asks for one.
+pub type Post(title: string, source: ?string, anchor: ?fn(string) -> string) {
+    // `Post.Section`, an associated type: declared in the body of `Post`.
+    pub type Section(depth: i32, slug: string)
+
+    // The first section of `doc`, absent when it has no heading.
+    pub fn firstSection(doc: MdDoc) -> ?Post.Section {
+        val entries = markdown.headings(doc);
+        return if (entries.length == 0)
+            null
+        else
+            Post.Section(depth: entries[0]!.depth, slug: entries[0]!.slug);
+    }
+}
+
+// The post's footnotes: absent when the post has no source.
+fn notesOf(post: Post) -> ?Footnote[] {
+    return if (post.source == null)
+        null
+    else
+        markdown.parse(post.source ?? "").footnotes;
+}
+
+// The title of `doc`, its first heading's text; an error when it has none.
+fn titleOf(doc: MdDoc) -> Result<string, string> {
+    val entries = markdown.headings(doc);
+    if (entries.length == 0) throw "no heading";
+    return entries[0]!.text;
+}
+
+pub fn main() -> void {
+    val upper: fn(string) -> string = { s -> s.toUpper() };
+    val guide = Post(
+        title: "guide",
+        source: "# Install\n\nRun it.[^n]\n\n[^n]: Once.\n",
+        anchor: upper,
+    );
+    val draft = Post(title: "draft", source: null, anchor: null);
+    val guideDoc = markdown.parse(guide.source ?? "");
+    val draftDoc = markdown.parse(draft.source ?? "");
+
+    // An associated type read through an optional: `?.slug` is `?string`.
+    val first = Post.firstSection(guideDoc)?.slug ?? "top";
+
+    // `?.(args)`: the hook called when the post holds one; `??` the default.
+    terminal.print(guide.anchor?.(first) ?? first, "\n");
+    terminal.print(draft.anchor?.("top") ?? "top", "\n");
+
+    // `?.[i]` and `?.`: `[0]` already answers `?Footnote`, and through `?.` it
+    // stays `?Footnote`, its label `?string` — absent for a post with no source.
+    terminal.print(notesOf(guide)?.[0]?.label ?? "no note", "\n");
+    terminal.print(notesOf(draft)?.[0]?.label ?? "no note", "\n");
+
+    // `Result` by its own methods: there is no `result` namespace to call.
+    terminal.print(titleOf(guideDoc).unwrapOr("untitled"), "\n");
+    terminal.print(titleOf(draftDoc).isError(), "\n");
+
+    // `!`: the guide is known to hold a source; a `null` here would abort,
+    // located, on every target.
+    terminal.print(guide.source!.length(), "\n");
+}

@@ -1,3 +1,48 @@
 //// Decision 396 — Markdown, YAML and JSON are three libraries of their own — `markdown`, `yaml`, `json` (`botopink/{markdown,yaml,json}` at `repository/{markdown,yaml,json}`, 326's rule) — and std knows nothing of JSON.
 
-pub fn main() -> void {}
+import {io.terminal} from "std";
+import {markdown, markdown.MdNode} from "markdown";
+
+// This program's own element: `markdown` answers a tree of its own and names
+// no framework, so the consumer maps it to what it renders.
+pub type Element(tag: string, text: string, kids: Element[])
+
+fn leaf(text: string) -> Element {
+    return Element(tag: "#text", text: text, kids: []);
+}
+
+fn node(tag: string, kids: MdNode[]) -> Element {
+    return Element(tag: tag, text: "", kids: kids.map({ k -> element(k) }));
+}
+
+fn element(n: MdNode) -> Element {
+    return case n {
+        Heading(depth, _, kids) -> node("h" + depth.toString(), kids);
+        Paragraph(kids) -> node("p", kids);
+        Quote(kids) -> node("blockquote", kids);
+        List(ordered, _, _, items) -> node(if (ordered) "ol" else "ul", items);
+        Item(_, kids) -> node("li", kids);
+        CodeBlock(lang, text) -> Element(tag: "pre:"
+            + lang, text: "", kids: [leaf(text)]);
+        Code(text) -> Element(tag: "code", text: "", kids: [leaf(text)]);
+        Emphasis(kids) -> node("em", kids);
+        Strong(kids) -> node("strong", kids);
+        Link(href, _, kids) -> node("a:" + href, kids);
+        Image(src, alt, _) -> Element(tag: "img:"
+            + src, text: "", kids: [leaf(alt)]);
+        Text(value) -> leaf(value);
+        _ -> Element(tag: "other", text: "", kids: []);
+    };
+}
+
+fn show(e: Element) -> string {
+    if (e.tag == "#text") return "\"" + e.text + "\"";
+    return e.tag + "(" + e.kids.map({ k -> show(k) }).join(", ") + ")";
+}
+
+pub fn main() -> void {
+    val source = "# Notes\n\nRead *this* and **that**, with `code` and a [link](https://botopink.dev).\n\n> ![logo](logo.png)\n\n- one\n\n```bp\nval x = 1;\n```\n";
+    for (markdown.parse(source).nodes) { n ->
+        terminal.print(show(element(n)), "\n");
+    }
+}

@@ -1,0 +1,9 @@
+// The module `toc` of this package: the one module that declares `outline`.
+import {markdown} from "markdown";
+
+pub fn outline(source: string) -> string {
+    return markdown
+        .headings(markdown.parse(source))
+        .map({ h -> h.slug })
+        .join(" ");
+}

@@ -1,3 +1,14 @@
 //// Decision 206 — `import {…} from "<name>"` resolves only to a package — std, a bundled package or a declared dependency.
 
-pub fn main() -> void {}
+import {io.terminal} from "std";
+import {markdown} from "markdown";
+import {toc.outline};
+import {toc.bullet as mark};
+
+pub fn main() -> void {
+    // `markdown` is the dependency, named with `from`; `outline` and `mark`
+    // come from this package's own module `toc`, named by its path alone.
+    val doc = markdown.parse("# Guide\n\n## Install\n\n## Use\n");
+    terminal.print(outline(doc), "\n");
+    terminal.print(mark, "\n");
+}
