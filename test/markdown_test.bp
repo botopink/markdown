@@ -29,7 +29,7 @@ fn html(source: string) -> string {
     return markdown.toHtml(markdown.parse(source));
 }
 
-fn contains(html: string, part: string) -> @Result<void, string> {
+fn contains(html: string, part: string) -> Result<void, string> {
     if (!html.contains(part)) throw "expected " + part + " in " + html;
     return;
 }

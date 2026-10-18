@@ -52,7 +52,7 @@ fn document() -> string {
     return parts.join("");
 }
 
-fn within(elapsed: i64, budget: i64) -> @Result<void, string> {
+fn within(elapsed: i64, budget: i64) -> Result<void, string> {
     if (elapsed > budget)
         throw "rendering 200 kB took "
             + elapsed.toString()

@@ -7,7 +7,7 @@
 
 import {markdown.parseWith, markdown.toHtml, markdown.gfmOptions};
 
-fn same(source: string, expected: string) -> @Result<void, string> {
+fn same(source: string, expected: string) -> Result<void, string> {
     val got = toHtml(parseWith(source, gfmOptions()));
     if (got != expected) throw "expected " + expected + " got " + got;
     return;

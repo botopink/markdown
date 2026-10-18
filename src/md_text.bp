@@ -14,33 +14,34 @@
 //// escaping of text and attribute values.
 
 import {md_entities.entityText};
+import {compiler} from "std";
 
 // A string's code points. `at` answers `-1` outside `[0, size)`; `text`
 // answers the code points `[start, end)` as a string (bounds clamped).
 pub type Chars(handle: unknown, size: i32) {
-    #[@external(
-        .Node("""(($0.handle[$1]) ?? -1)"""),
+    #[compiler.external(
+        .JavaScript("""(($0.handle[$1]) ?? -1)"""),
         .Erlang("""(fun(__B, __I) -> __T = element(2, __B), case (__I >= 0) andalso (__I < tuple_size(__T)) of true -> element(__I + 1, __T); false -> -1 end end)($0, $1)"""),
     )]
     pub declare fn at(self: Self, i: i32) -> i32;
 
-    #[@external(
-        .Node("""((__b, __s, __e) => { const __h = __b.handle; let __o = ""; const __z = Math.min(__e, __h.length); for (let __k = Math.max(__s, 0); __k < __z; __k++) __o += String.fromCodePoint(__h[__k]); return __o; })($0, $1, $2)"""),
+    #[compiler.external(
+        .JavaScript("""((__b, __s, __e) => { const __h = __b.handle; let __o = ""; const __z = Math.min(__e, __h.length); for (let __k = Math.max(__s, 0); __k < __z; __k++) __o += String.fromCodePoint(__h[__k]); return __o; })($0, $1, $2)"""),
         .Erlang("""(fun(__B, __S, __E) -> __T = element(2, __B), __A = erlang:max(__S, 0), __Z = erlang:min(__E, tuple_size(__T)), unicode:characters_to_binary([element(__K, __T) || __K <- lists:seq(__A + 1, __Z)]) end)($0, $1, $2)"""),
     )]
     pub declare fn text(self: Self, start: i32, end: i32) -> string;
 }
 
-#[@external(
-    .Node("""((__s) => { const __a = Array.from(__s, (__c) => __c.codePointAt(0)); return { handle: __a, size: __a.length }; })($0)"""),
+#[compiler.external(
+    .JavaScript("""((__s) => { const __a = Array.from(__s, (__c) => __c.codePointAt(0)); return { handle: __a, size: __a.length }; })($0)"""),
     .Erlang("""(fun(__S) -> __T = list_to_tuple(unicode:characters_to_list(__S, utf8)), #{handle => __T, size => tuple_size(__T)} end)($0)"""),
 )]
 pub declare fn charsOf(s: string) -> Chars;
 
 // Unicode punctuation outside ASCII: the general categories P and S
 // (CommonMark 0.31.2 § 2.1, "Unicode punctuation character").
-#[@external(
-    .Node("""(new RegExp("^[\\p{P}\\p{S}]$", "u").test(String.fromCodePoint($0)))"""),
+#[compiler.external(
+    .JavaScript("""(new RegExp("^[\\p{P}\\p{S}]$", "u").test(String.fromCodePoint($0)))"""),
     .Erlang("""(re:run(<<($0)/utf8>>, <<"^[\\p{P}\\p{S}]$"/utf8>>, [unicode, ucp]) =/= nomatch)"""),
 )]
 declare fn isWidePunctHost(c: i32) -> bool;
