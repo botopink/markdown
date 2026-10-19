@@ -1,5 +1,5 @@
 # markdown — conformance
 
 - `modules/decisions-taken/<slug>-<N>/` — one directory per code-bearing row of `../decisions-taken.md` (front 166, decisions 646–651): a `docs.md` (its first line generated, the rest written) and the example under `draft/` (phase 1, not a cell yet) or `src/` with `botopink.json` once promoted. Kept by the meta repository's `scripts/decision-cells.py` and its CI check 7; the subtree is front 166's (decision 651).
-- `docs.md` — the reference; its row names `modules/decisions-taken/`.
+- `docs.md` — the reference (decisions 457, 461): the package and how a program imports it; one section per module of `src/` — `markdown` (the options, `parse`, the `MdNode` tree, `headings`, `plainText`, `slug`, `footnoteId`, `toHtml`), `md_text` (code points, character classes, escaping, label and URL normalisation) and `md_entities` (the HTML5 named references); the departures `src/` still writes; and the row naming `modules/decisions-taken/`. No fenced `botopink` code: every example is a decision cell it links; a table or a wire format is fenced as `text`.
 - `modules/botopink.json` — the cells' workspace: `markdown` as a path dependency, the library's two targets; `decision-cells.py compile` builds each draft against it.
