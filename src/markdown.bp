@@ -59,25 +59,25 @@ pub fn gfmOptions() -> MarkdownOptions {
 // checked one. `Table.aligns` holds `""`, `left`,
 // `center` or `right` per column.
 pub type MdNode {
-    Heading(depth: i32, id: string, kids: Array<MdNode>),
-    Paragraph(kids: Array<MdNode>),
+    Heading(depth: i32, id: string, kids: array<MdNode>),
+    Paragraph(kids: array<MdNode>),
     CodeBlock(lang: string, text: string),
-    Quote(kids: Array<MdNode>),
-    List(ordered: bool, start: i32, tight: bool, items: Array<MdNode>),
-    Item(task: i32, kids: Array<MdNode>),
+    Quote(kids: array<MdNode>),
+    List(ordered: bool, start: i32, tight: bool, items: array<MdNode>),
+    Item(task: i32, kids: array<MdNode>),
     Rule,
     Html(text: string),
-    Table(aligns: Array<string>, head: Array<MdNode>, rows: Array<MdNode>),
-    Row(cells: Array<MdNode>),
-    Cell(kids: Array<MdNode>),
+    Table(aligns: array<string>, head: array<MdNode>, rows: array<MdNode>),
+    Row(cells: array<MdNode>),
+    Cell(kids: array<MdNode>),
     Text(value: string),
     SoftBreak,
     HardBreak,
     Code(text: string),
-    Emphasis(kids: Array<MdNode>),
-    Strong(kids: Array<MdNode>),
-    Strike(kids: Array<MdNode>),
-    Link(href: string, title: string, kids: Array<MdNode>),
+    Emphasis(kids: array<MdNode>),
+    Strong(kids: array<MdNode>),
+    Strike(kids: array<MdNode>),
+    Link(href: string, title: string, kids: array<MdNode>),
     Image(src: string, alt: string, title: string),
     InlineHtml(text: string),
     FootnoteRef(label: string, index: i32, nth: i32),
@@ -85,9 +85,9 @@ pub type MdNode {
 
 // A footnote that is referenced: its definition's label, its number (the
 // order of first reference), how many references it has, its blocks.
-pub type Footnote(label: string, index: i32, refs: i32, kids: Array<MdNode>)
+pub type Footnote(label: string, index: i32, refs: i32, kids: array<MdNode>)
 
-pub type MdDoc(nodes: Array<MdNode>, footnotes: Array<Footnote>)
+pub type MdDoc(nodes: array<MdNode>, footnotes: array<Footnote>)
 
 // A heading as a table of contents reads it (`headings`).
 pub type TocEntry(depth: i32, slug: string, text: string)
@@ -178,8 +178,8 @@ fn noList() -> ListData {
 type Open(
     kind: Kind,
     startLine: i32,
-    children: Array<Blk> = [],
-    lines: Array<string> = [],
+    children: array<Blk> = [],
+    lines: array<string> = [],
     level: i32 = 0,
     fenced: bool = false,
     fenceChar: i32 = 0,
@@ -196,10 +196,10 @@ type Blk(
     kind: Kind,
     startLine: i32,
     endLine: i32,
-    children: Array<Blk> = [],
+    children: array<Blk> = [],
     content: string = "",
     info: string = "",
-    rows: Array<string> = [],
+    rows: array<string> = [],
     level: i32 = 0,
     list: ListData = noList(),
     tight: bool = true,
@@ -214,7 +214,7 @@ type Ref(label: string, dest: string, title: string)
 // character and what it says (`indent`, `blank`), and what the container
 // walk matched.
 type P(
-    stack: Array<Open>,
+    stack: array<Open>,
     line: Chars,
     lineNumber: i32,
     offset: i32,
@@ -227,11 +227,11 @@ type P(
     partial: bool,
     allClosed: bool,
     lastMatched: i32,
-    refs: Array<Ref>,
+    refs: array<Ref>,
     gfm: bool,
 )
 
-type Parsed(children: Array<Blk>, refs: Array<Ref>)
+type Parsed(children: array<Blk>, refs: array<Ref>)
 
 fn emptyOpen() -> Open {
     return Open(kind: Kind.BDoc, startLine: 0);
@@ -367,11 +367,11 @@ fn addLine(p0: P) -> P {
     return setTop(p, Open(..top, lines: top.lines.append([content])));
 }
 
-fn contentOf(lines: Array<string>) -> string {
+fn contentOf(lines: array<string>) -> string {
     return lines.map({ l -> l + "\n" }).join("");
 }
 
-fn linesOf(content: string) -> Array<string> {
+fn linesOf(content: string) -> array<string> {
     if (content == "") return [];
     val body = if (content.endsWith("\n"))
         content.slice(0, content.length - 1)
@@ -984,7 +984,7 @@ fn startTable(p: P, container: i32) -> #(P, i32) {
 
 // The alignments of a delimiter row (`| :-- | :-: | --: |`), `[]` when the
 // text is none.
-fn delimiterRow(s: string) -> Array<string> {
+fn delimiterRow(s: string) -> array<string> {
     val cells = splitRow(s);
     var out: string[] = [];
     var ok = cells.length > 0;
@@ -1016,7 +1016,7 @@ fn delimiterRow(s: string) -> Array<string> {
 // A table row's cells, trimmed: split at every `|` not escaped by a
 // backslash, a leading and a trailing pipe dropped, `\|` kept for the inline
 // pass to unescape.
-fn splitRow(s: string) -> Array<string> {
+fn splitRow(s: string) -> array<string> {
     val c = charsOf(s.trim());
     var cells: string[] = [];
     var start = 0;
@@ -1419,7 +1419,7 @@ fn lineEndAt(c: Chars, pos: i32) -> i32 {
     return -1;
 }
 
-fn findRef(refs: Array<Ref>, label: string) -> ?Ref {
+fn findRef(refs: array<Ref>, label: string) -> ?Ref {
     for (refs) { r ->
         if (r.label == label) return r;
     }
@@ -1429,7 +1429,7 @@ fn findRef(refs: Array<Ref>, label: string) -> ?Ref {
 // A link reference definition at the start of `s`: the length it takes and
 // the definitions with it added (an earlier one of the same label wins);
 // `0` when the text is none.
-fn parseReference(s: string, refs: Array<Ref>) -> #(i32, Array<Ref>) {
+fn parseReference(s: string, refs: array<Ref>) -> #(i32, array<Ref>) {
     val c = charsOf(s);
     val n = linkLabelLength(c, 0);
     if (n == 0 || c.at(n) != 58) return #(0, refs);
@@ -1464,17 +1464,17 @@ fn parseReference(s: string, refs: Array<Ref>) -> #(i32, Array<Ref>) {
 
 // ── definitions: references and footnotes, before any inline ────────────────
 
-type NoteDef(norm: string, label: string, body: Array<Blk>)
+type NoteDef(norm: string, label: string, body: array<Blk>)
 
 type NoteUse(norm: string, label: string, index: i32, count: i32)
 
 // Every link reference definition at the start of a paragraph (in document
 // order) and every footnote definition.
 fn gatherDefinitions(
-    blocks: Array<Blk>,
-    refs0: Array<Ref>,
-    notes0: Array<NoteDef>,
-) -> #(Array<Ref>, Array<NoteDef>) {
+    blocks: array<Blk>,
+    refs0: array<Ref>,
+    notes0: array<NoteDef>,
+) -> #(array<Ref>, array<NoteDef>) {
     var refs = refs0;
     var notes = notes0;
     for (blocks) { b ->
@@ -1502,8 +1502,8 @@ fn gatherDefinitions(
 // definitions with them added.
 fn takeReferences(
     content0: string,
-    refs0: Array<Ref>,
-) -> #(string, Array<Ref>) {
+    refs0: array<Ref>,
+) -> #(string, array<Ref>) {
     var content = content0;
     var refs = refs0;
     var reading = true;
@@ -1517,14 +1517,14 @@ fn takeReferences(
     return #(content, refs);
 }
 
-fn noteBody(notes: Array<NoteDef>, norm: string) -> Array<Blk> {
+fn noteBody(notes: array<NoteDef>, norm: string) -> array<Blk> {
     for (notes) { n ->
         if (n.norm == norm) return n.body;
     }
     return [];
 }
 
-fn refsOf(used: Array<NoteUse>, index: i32) -> i32 {
+fn refsOf(used: array<NoteUse>, index: i32) -> i32 {
     for (used) { u ->
         if (u.index == index) return u.count;
     }
@@ -1534,14 +1534,14 @@ fn refsOf(used: Array<NoteUse>, index: i32) -> i32 {
 // ── blocks to nodes ─────────────────────────────────────────────────────────
 
 type Ctx(
-    refs: Array<Ref>,
-    notes: Array<NoteDef>,
-    used: Array<NoteUse>,
-    slugs: Array<string>,
+    refs: array<Ref>,
+    notes: array<NoteDef>,
+    used: array<NoteUse>,
+    slugs: array<string>,
     options: MarkdownOptions,
 )
 
-fn convertBlocks(blocks: Array<Blk>, ctx0: Ctx) -> #(Array<MdNode>, Ctx) {
+fn convertBlocks(blocks: array<Blk>, ctx0: Ctx) -> #(array<MdNode>, Ctx) {
     var ctx = ctx0;
     var out: MdNode[] = [];
     for (blocks) { b ->
@@ -1655,10 +1655,10 @@ fn convertTable(b: Blk, ctx0: Ctx) -> #(MdNode, bool, Ctx) {
 }
 
 fn convertCells(
-    cells: Array<string>,
+    cells: array<string>,
     width: i32,
     ctx0: Ctx,
-) -> #(Array<MdNode>, Ctx) {
+) -> #(array<MdNode>, Ctx) {
     var ctx = ctx0;
     var out: MdNode[] = [];
     var i = 0;
@@ -1744,9 +1744,9 @@ type Brk(id: i32, index: i32, image: bool, active: bool, bracketAfter: bool, bel
 type IP(
     c: Chars,
     pos: i32,
-    items: Array<Inl>,
-    delims: Array<Delim>,
-    brackets: Array<Brk>,
+    items: array<Inl>,
+    delims: array<Delim>,
+    brackets: array<Brk>,
     nextId: i32,
     ctx: Ctx,
 )
@@ -1765,7 +1765,7 @@ fn trimWs(s: string) -> string {
     return c.text(a, b);
 }
 
-fn parseInlines(content: string, ctx: Ctx) -> #(Array<MdNode>, Ctx) {
+fn parseInlines(content: string, ctx: Ctx) -> #(array<MdNode>, Ctx) {
     var ip = IP(
         c: charsOf(trimWs(content)),
         pos: 0,
@@ -2087,7 +2087,7 @@ fn handleDelim(ip: IP, cc: i32) -> IP {
     return out;
 }
 
-fn indexOfItem(items: Array<Inl>, id: i32) -> i32 {
+fn indexOfItem(items: array<Inl>, id: i32) -> i32 {
     var i = 0;
     for (items) { item ->
         val hit = case item {
@@ -2107,14 +2107,14 @@ fn litValue(item: Inl) -> string {
     };
 }
 
-fn setLit(items: Array<Inl>, at: i32, value: string, id: i32) -> Array<Inl> {
+fn setLit(items: array<Inl>, at: i32, value: string, id: i32) -> array<Inl> {
     return items
         .slice(0, at)
         .append([Inl.Lit(id: id, value: value)])
         .append(items.slice(at + 1, items.length));
 }
 
-fn removeAt<T>(xs: Array<T>, at: i32) -> Array<T> {
+fn removeAt<T>(xs: array<T>, at: i32) -> array<T> {
     return xs.slice(0, at).append(xs.slice(at + 1, xs.length));
 }
 
@@ -2132,7 +2132,7 @@ fn bottomSlot(closer: Delim) -> i32 {
 fn processEmphasis(ip0: IP, bottom: i32) -> IP {
     var items = ip0.items;
     var delims = ip0.delims;
-    var floors = Array.repeat(-1, 15);
+    var floors = array.repeat(-1, 15);
     var ci = bottom;
     while (ci < delims.length) {
         val closer = delims.at(ci) ?? Delim(
@@ -2416,7 +2416,7 @@ fn footnoteRef(ip: IP, opener: Brk, startpos: i32) -> #(IP, bool) {
 }
 
 // Pending items as nodes, adjacent text merged.
-fn itemsToNodes(items: Array<Inl>) -> Array<MdNode> {
+fn itemsToNodes(items: array<Inl>) -> array<MdNode> {
     var out: MdNode[] = [];
     var pending: string[] = [];
     for (items) { item ->
@@ -2442,7 +2442,7 @@ fn itemsToNodes(items: Array<Inl>) -> Array<MdNode> {
 }
 
 // The text of inlines as an image's `alt` reads it.
-pub fn plainText(nodes: Array<MdNode>) -> string {
+pub fn plainText(nodes: array<MdNode>) -> string {
     return nodes.map({ n -> plainOf(n) }).join("");
 }
 
@@ -2468,7 +2468,7 @@ fn plainOf(n: MdNode) -> string {
 // ── extended autolinks (GFM) ────────────────────────────────────────────────
 
 // Text outside links and code, with its extended autolinks.
-fn autolinkAll(nodes: Array<MdNode>) -> Array<MdNode> {
+fn autolinkAll(nodes: array<MdNode>) -> array<MdNode> {
     var out: MdNode[] = [];
     for (nodes) { n ->
         case n {
@@ -2575,7 +2575,7 @@ fn autolinkBoundary(c: Chars, i: i32) -> bool {
     return isUnicodeSpace(b) || b == 42 || b == 95 || b == 126 || b == 40;
 }
 
-fn autolinkText(value: string) -> Array<MdNode> {
+fn autolinkText(value: string) -> array<MdNode> {
     val hasCandidate = value.contains("www.")
         || value.contains("WWW.")
         || value.contains("://")
@@ -2685,7 +2685,7 @@ fn slugOf(title: string) -> string {
     return parts.join("");
 }
 
-fn uniqueSlug(slug: string, taken: Array<string>) -> string {
+fn uniqueSlug(slug: string, taken: array<string>) -> string {
     if (!taken.contains(slug)) return slug;
     var n = 1;
     while (taken.contains(slug + "-" + n.toString())) {
@@ -2695,11 +2695,11 @@ fn uniqueSlug(slug: string, taken: Array<string>) -> string {
 }
 
 // Every heading of the document, in order, nested ones included.
-pub fn headings(doc: MdDoc) -> Array<TocEntry> {
+pub fn headings(doc: MdDoc) -> array<TocEntry> {
     return headingsIn(doc.nodes);
 }
 
-fn headingsIn(nodes: Array<MdNode>) -> Array<TocEntry> {
+fn headingsIn(nodes: array<MdNode>) -> array<TocEntry> {
     var out: TocEntry[] = [];
     for (nodes) { n ->
         out = out.append(headingsOf(n));
@@ -2707,7 +2707,7 @@ fn headingsIn(nodes: Array<MdNode>) -> Array<TocEntry> {
     return out;
 }
 
-fn headingsOf(n: MdNode) -> Array<TocEntry> {
+fn headingsOf(n: MdNode) -> array<TocEntry> {
     return case n {
         Heading(depth, id, kids) -> [
             TocEntry(depth: depth, slug: id, text: plainText(kids)),
@@ -2765,7 +2765,7 @@ fn blockHtml(n: MdNode, tight: bool) -> string {
     };
 }
 
-fn headingHtml(depth: i32, id: string, kids: Array<MdNode>) -> string {
+fn headingHtml(depth: i32, id: string, kids: array<MdNode>) -> string {
     val tag = "h" + depth.toString();
     val idAttr = if (id == "") "" else attr("id", id);
     return ["<", tag, idAttr, ">", inlinesHtml(kids), "</", tag, ">\n"].join(
@@ -2789,7 +2789,7 @@ fn listHtml(
     ordered: bool,
     start: i32,
     tight: bool,
-    items: Array<MdNode>,
+    items: array<MdNode>,
 ) -> string {
     val tag = if (ordered) "ol" else "ul";
     val startAttr = if (ordered && start != 1)
@@ -2841,9 +2841,9 @@ fn itemHtml(item: MdNode, tight: bool) -> string {
 }
 
 fn tableHtml(
-    aligns: Array<string>,
-    head: Array<MdNode>,
-    rows: Array<MdNode>,
+    aligns: array<string>,
+    head: array<MdNode>,
+    rows: array<MdNode>,
 ) -> string {
     val headHtml = rowHtml(head, aligns, "th");
     val bodyRows = rows
@@ -2867,7 +2867,7 @@ fn tableHtml(
     ].join("");
 }
 
-fn rowHtml(cells: Array<MdNode>, aligns: Array<string>, tag: string) -> string {
+fn rowHtml(cells: array<MdNode>, aligns: array<string>, tag: string) -> string {
     var out: string[] = ["<tr>\n"];
     var i = 0;
     for (cells) { cell ->
@@ -2895,7 +2895,7 @@ fn rowHtml(cells: Array<MdNode>, aligns: Array<string>, tag: string) -> string {
     return out.join("");
 }
 
-fn inlinesHtml(nodes: Array<MdNode>) -> string {
+fn inlinesHtml(nodes: array<MdNode>) -> string {
     return nodes.map({ n -> inlineHtml(n) }).join("");
 }
 
@@ -2916,7 +2916,7 @@ fn inlineHtml(n: MdNode) -> string {
     };
 }
 
-fn linkHtml(href: string, title: string, kids: Array<MdNode>) -> string {
+fn linkHtml(href: string, title: string, kids: array<MdNode>) -> string {
     val titleAttr = if (title == "") "" else attr("title", title);
     return [
         "<a",

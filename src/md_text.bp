@@ -51,7 +51,7 @@ declare fn isWidePunctHost(c: i32) -> bool;
 // numeric character reference.
 pub fn charText(c: i32) -> string {
     val scalar = c > 0 && c <= 1114111 && (c < 55296 || c > 57343);
-    return if (scalar) String.fromCodepoint(c) else String.fromCodepoint(65533);
+    return if (scalar) string.fromCodepoint(c) else string.fromCodepoint(65533);
 }
 
 pub fn isSpaceOrTab(c: i32) -> bool {
