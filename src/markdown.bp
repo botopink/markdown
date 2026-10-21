@@ -2995,8 +2995,8 @@ fn footnoteHtml(f: Footnote) -> string {
         null {
             false
         }
-        node {
-            case node {
+        _ {
+            case last! {
                 Paragraph(_) -> true;
                 _ -> false;
             }
@@ -3013,8 +3013,8 @@ fn footnoteHtml(f: Footnote) -> string {
             null {
                 []
             }
-            node {
-                case node {
+            _ {
+                case last! {
                     Paragraph(kids) -> kids;
                     _ -> [];
                 }
