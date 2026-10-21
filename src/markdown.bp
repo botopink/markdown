@@ -258,7 +258,7 @@ fn parseBlocks(source: string, gfm: bool) -> Parsed {
         refs: [],
         gfm: gfm,
     );
-    for ln in lines {
+    for (lines) { ln ->
         p = incorporateLine(p, ln);
     }
     val total = lines.length;
@@ -988,7 +988,7 @@ fn delimiterRow(s: string) -> array<string> {
     val cells = splitRow(s);
     var out: string[] = [];
     var ok = cells.length > 0;
-    for cell in cells {
+    for (cells) { cell ->
         val c = charsOf(cell);
         val left = c.at(0) == 58;
         val right = c.size > 0 && c.at(c.size - 1) == 58;
@@ -1420,7 +1420,7 @@ fn lineEndAt(c: Chars, pos: i32) -> i32 {
 }
 
 fn findRef(refs: array<Ref>, label: string) -> ?Ref {
-    for r in refs {
+    for (refs) { r ->
         if (r.label == label) return r;
     }
     return null;
@@ -1477,7 +1477,7 @@ fn gatherDefinitions(
 ) -> #(array<Ref>, array<NoteDef>) {
     var refs = refs0;
     var notes = notes0;
-    for b in blocks {
+    for (blocks) { b ->
         if (b.kind == Kind.BPara)
             refs = takeReferences(b.content, refs)._1
         else if (b.kind == Kind.BNote) {
@@ -1518,14 +1518,14 @@ fn takeReferences(
 }
 
 fn noteBody(notes: array<NoteDef>, norm: string) -> array<Blk> {
-    for n in notes {
+    for (notes) { n ->
         if (n.norm == norm) return n.body;
     }
     return [];
 }
 
 fn refsOf(used: array<NoteUse>, index: i32) -> i32 {
-    for u in used {
+    for (used) { u ->
         if (u.index == index) return u.count;
     }
     return 0;
@@ -1544,7 +1544,7 @@ type Ctx(
 fn convertBlocks(blocks: array<Blk>, ctx0: Ctx) -> #(array<MdNode>, Ctx) {
     var ctx = ctx0;
     var out: MdNode[] = [];
-    for b in blocks {
+    for (blocks) { b ->
         val r = convertBlock(b, ctx);
         ctx = r._2;
         if (r._1) out.push(r._0);
@@ -1642,7 +1642,7 @@ fn convertTable(b: Blk, ctx0: Ctx) -> #(MdNode, bool, Ctx) {
     val head = convertCells(splitRow(b.rows.at(0) ?? ""), width, ctx);
     ctx = head._1;
     var rows: MdNode[] = [];
-    for line in b.rows.slice(2, b.rows.length) {
+    for (b.rows.slice(2, b.rows.length)) { line ->
         val r = convertCells(splitRow(line), width, ctx);
         ctx = r._1;
         rows.push(MdNode.Row(cells: r._0));
@@ -2089,7 +2089,7 @@ fn handleDelim(ip: IP, cc: i32) -> IP {
 
 fn indexOfItem(items: array<Inl>, id: i32) -> i32 {
     var i = 0;
-    for item in items {
+    for (items) { item ->
         val hit = case item {
             Lit(k, _) -> k == id;
             Done(_) -> false;
@@ -2419,7 +2419,7 @@ fn footnoteRef(ip: IP, opener: Brk, startpos: i32) -> #(IP, bool) {
 fn itemsToNodes(items: array<Inl>) -> array<MdNode> {
     var out: MdNode[] = [];
     var pending: string[] = [];
-    for item in items {
+    for (items) { item ->
         case item {
             Lit(_, value) {
                 pending.push(value);
@@ -2470,10 +2470,10 @@ fn plainOf(n: MdNode) -> string {
 // Text outside links and code, with its extended autolinks.
 fn autolinkAll(nodes: array<MdNode>) -> array<MdNode> {
     var out: MdNode[] = [];
-    for n in nodes {
+    for (nodes) { n ->
         case n {
             Text(value) {
-                for k in autolinkText(value) {
+                for (autolinkText(value)) { k ->
                     out.push(k);
                 }
             }
@@ -2621,7 +2621,7 @@ fn autolinkAt(c: Chars, i: i32, floor: i32) -> #(i32, string, string, i32) {
         return #(end, normalizeUri("http://" + shown), shown, i);
     }
     val schemes = ["http://", "https://", "ftp://"];
-    for scheme in schemes {
+    for (schemes) { scheme ->
         if (wordAt(c, i, scheme) && autolinkBoundary(c, i)) {
             val after = i + charsOf(scheme).size;
             val d = domainEnd(c, after);
@@ -2701,7 +2701,7 @@ pub fn headings(doc: MdDoc) -> array<TocEntry> {
 
 fn headingsIn(nodes: array<MdNode>) -> array<TocEntry> {
     var out: TocEntry[] = [];
-    for n in nodes {
+    for (nodes) { n ->
         out = out.append(headingsOf(n));
     }
     return out;
@@ -2815,7 +2815,7 @@ fn itemHtml(item: MdNode, tight: bool) -> string {
     var out: string[] = ["<li>"];
     var atLineStart = false;
     var first = true;
-    for k in parts._1 {
+    for (parts._1) { k ->
         val isPara = case k {
             Paragraph(_) -> true;
             _ -> false;
@@ -2870,7 +2870,7 @@ fn tableHtml(
 fn rowHtml(cells: array<MdNode>, aligns: array<string>, tag: string) -> string {
     var out: string[] = ["<tr>\n"];
     var i = 0;
-    for cell in cells {
+    for (cells) { cell ->
         val align = aligns.at(i) ?? "";
         val alignAttr = if (align == "") "" else attr("align", align);
         val kids = case cell {
