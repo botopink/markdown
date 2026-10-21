@@ -42,7 +42,7 @@ fn show(e: Element) -> string {
 
 pub fn main() -> void {
     val source = "# Notes\n\nRead *this* and **that**, with `code` and a [link](https://botopink.dev).\n\n> ![logo](logo.png)\n\n- one\n\n```bp\nval x = 1;\n```\n";
-    for (markdown.parse(source).nodes) { n ->
+    for n in markdown.parse(source).nodes {
         terminal.print(show(element(n)), "\n");
     }
 }
