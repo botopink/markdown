@@ -19,7 +19,7 @@ exception; none is planned. It imports std only, on commonJS and erlang.
 ```text
 markdown/
 ├── AGENTS.md
-├── botopink.json     "name": "markdown", "target": "erlang", "targets": ["erlang", "commonJS"], std only
+├── botopink.json     "name": "markdown", "target": "erlang", "targets": ["erlang", "beam", "commonJS"] (no wasm: `isWidePunctHost` (its own) and std `io.clock.monotonicMillis` have no `.Wasm(…)` binding, decision 993 (4)), std only
 ├── src/
 │   ├── root.bp          `pub mod markdown;` · private `md_text`, `md_entities`
 │   ├── markdown.bp      the public surface and the reader (below)
